@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Page</title>
   <link rel="stylesheet" href="basic-css.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="basic-js.js" defer></script>
 </head>
 <body>
@@ -13,7 +14,19 @@
   <p>This is a basic HTML page with a button that shows an alert when clicked.</p>
   <button onclick="sayHello()">Click Me</button>
 
-
+  <div id="data-container">
+    <!-- Content from ../2-1.md will be loaded here -->
+  </div>
+  <script>
+    fetch('../2-1.md')
+      .then(response => response.text())
+      .then(text => {
+        document.getElementById('data-container').textContent = text;
+      })
+      .catch(error => {
+        document.getElementById('data-container').textContent = 'Failed to load content.';
+      });
+  </script>
 
 </body>
 </html>
