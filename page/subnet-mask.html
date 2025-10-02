@@ -68,6 +68,14 @@
     <br><br>
 
     <!-- Subnet Mask Input -->
+    <label>
+        <input type="radio" name="maskMode" id="maskModeCidr" value="cidr" checked onchange="toggleMaskInput()"> CIDR
+    </label>
+    <input type="number" id="cidrInput" min="1" max="32" maxlength="2" style="width:50px;" oninput="cidrToMask()" />
+    <label>
+        <input type="radio" name="maskMode" id="maskModeBytes" value="bytes" onchange="toggleMaskInput()"> Subnet Mask
+    </label>
+    <br>
     <label>Subnet Mask:</label>
     <div class="ip-inputs">
         <input type="number" id="mask1" min="0" max="255" maxlength="3" oninput="updateBinaryDisplay('mask'); moveNext(this, 'mask2')">
@@ -124,17 +132,59 @@
     <script>    
     // TODO: CIDR valid check
     // TODO: IP Class (A, B, C, D, E) determination valid check
-            
+    // TODO: Color
+    // TODO: HostMin, HostMax, TotalHosts calculation   
+
+    function toggleMaskInput() {
+        const cidrMode = document.getElementById('maskModeCidr').checked;
+        document.getElementById('cidrInput').disabled = !cidrMode;
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById('mask' + i).disabled = cidrMode;
+        }
+    }
+    function cidrToMask() {
+        const cidr = parseInt(document.getElementById('cidrInput').value);
+        if (isNaN(cidr) || cidr < 1 || cidr > 32) return;
+        let bits = '1'.repeat(cidr).padEnd(32, '0');
+        for (let i = 0; i < 4; i++) {
+            document.getElementById('mask' + (i + 1)).value = parseInt(bits.slice(i * 8, (i + 1) * 8), 2);
+        }
+        updateBinaryDisplay('mask');
+    }
+    // Keep mask fields in sync with CIDR if user edits mask bytes directly
+    function maskToCidrInput() {
+        if (!document.getElementById('maskModeBytes').checked) return;
+        const maskParts = [];
+        for (let i = 1; i <= 4; i++) {
+            const val = parseInt(document.getElementById('mask' + i).value);
+            if (isNaN(val)) return;
+            maskParts.push(val);
+        }
+        const cidr = maskToCIDR(maskParts);
+        document.getElementById('cidrInput').value = cidr;
+    }
+    // Attach maskToCidrInput to mask fields
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById('mask' + i).addEventListener('input', maskToCidrInput);
+    }
+    // Initial state
+    toggleMaskInput();
+
     // Common valid subnet masks (in decimal arrays)
-    const validMasks = [
-        [255, 0, 0, 0], [255, 128, 0, 0], [255, 192, 0, 0], [255, 224, 0, 0],
-        [255, 240, 0, 0], [255, 248, 0, 0], [255, 252, 0, 0], [255, 254, 0, 0],
-        [255, 255, 0, 0], [255, 255, 128, 0], [255, 255, 192, 0], [255, 255, 224, 0],
-        [255, 255, 240, 0], [255, 255, 248, 0], [255, 255, 252, 0], [255, 255, 254, 0],
-        [255, 255, 255, 0], [255, 255, 255, 128], [255, 255, 255, 192], [255, 255, 255, 224],
-        [255, 255, 255, 240], [255, 255, 255, 248], [255, 255, 255, 252], [255, 255, 255, 254],
-        [255, 255, 255, 255]
-    ];
+    function generateValidMasks() {
+        const masks = [];
+        for (let cidr = 1; cidr <= 32; cidr++) {
+            let mask = [];
+            let bits = '1'.repeat(cidr).padEnd(32, '0');
+            for (let i = 0; i < 4; i++) {
+                mask.push(parseInt(bits.slice(i * 8, (i + 1) * 8), 2));
+            }
+            masks.push(mask);            
+        }
+        return masks;
+    }  
+    const validMasks = generateValidMasks();
+    // const validMasks = [[255,0,0,0],[255,128,0,0],[255,192,0,0],[255,224,0,0],[255,240,0,0],[255,248,0,0],[255,252,0,0],[255,254,0,0],[255,255,0,0],[255,255,128,0],[255,255,192,0],[255,255,224,0],[255,255,240,0],[255,255,248,0],[255,255,252,0],[255,255,254,0],[255,255,255,0],[255,255,255,128],[255,255,255,192],[255,255,255,224],[255,255,255,240],[255,255,255,248],[255,255,255,252],[255,255,255,254],[255,255,255,255]];
 
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -218,18 +268,29 @@
 
         const cidr = maskToCIDR(maskParts);
         const ipBinary = ipParts.map(n => n.toString(2).padStart(8, '0')).join('');
+
+        // CIDR slicing method
         const networkBinary = ipBinary.slice(0, cidr).padEnd(32, '0');
+
+        // Bitwise AND method (for demonstration)
+        // You can compare networkBinary and networkBinaryBitwise for equivalence if desired
+        const networkParts = ipParts.map((ip, i) => ip & maskParts[i]);
+        const networkBinaryBitwise = networkParts.map(n => n.toString(2).padStart(8, '0')).join('');
+
         const broadcastBinary = ipBinary.slice(0, cidr).padEnd(32, '1');
         const networkAddress = networkBinary.match(/.{8}/g).map(b => parseInt(b, 2)).join('.');
         const broadcastAddress = broadcastBinary.match(/.{8}/g).map(b => parseInt(b, 2)).join('.');
         const subnetMask = maskParts.join('.');
 
+        // resultDiv.innerHTML = `
+        //     <strong>CIDR:</strong> /${cidr}<br>
+        //     <strong>Subnet Mask:</strong> ${subnetMask}<br>
+        //     <strong>Network Address:</strong> ${networkAddress}<br>
+        //     <strong>Broadcast Address:</strong> ${broadcastAddress}
+        // `;
         resultDiv.innerHTML = `
-            <strong>CIDR:</strong> /${cidr}<br>
-            <strong>Subnet Mask:</strong> ${subnetMask}<br>
-            <strong>Network Address:</strong> ${networkAddress}<br>
             <strong>Broadcast Address:</strong> ${broadcastAddress}
-        `;
+        `;        
         updateBinaryTable();
     }
 

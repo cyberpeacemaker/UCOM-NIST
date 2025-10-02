@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Show Images from 10.0.1.41</title>
+</head>
+<body>
+  <h1>Images from 10.0.1.41</h1>
+  <div id="image-container">Loading...</div>
+
+  <script>
+    fetch('http://10.0.1.41')
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const images = doc.querySelectorAll('table#files img');
+        console.log('Found images:', images);
+        const container = document.getElementById('image-container');
+        container.innerHTML = ''; // Clear "Loading..."
+
+        images.forEach(img => {
+          const newImg = document.createElement('img');
+          newImg.src = img.src.startsWith('http') ? img.src : `http://10.0.1.41${img.getAttribute('src')}`;
+          newImg.style.maxWidth = '200px';
+          newImg.style.margin = '10px';
+          container.appendChild(newImg);
+        });
+      })
+      .catch(err => {
+        document.getElementById('image-container').innerText = 'Failed to load images.';
+        console.error('Fetch failed:', err);
+      });
+  </script>
+</body>
+</html>
