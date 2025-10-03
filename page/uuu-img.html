@@ -3,34 +3,140 @@
 <head>
   <meta charset="UTF-8">
   <title>Show Images from 10.0.1.41</title>
+  <style>
+    .img-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      background: #2465c5;
+      transition: box-shadow 0.2s, background 0.2s;
+    }
+    .img-card {
+      transition: box-shadow 0.2s, background 0.2s;
+      margin-bottom: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      max-width: 840px;
+      align-items: center;
+    } 
+  </style>
 </head>
 <body>
   <h1>Images from 10.0.1.41</h1>
   <div id="image-container">Loading...</div>
 
-  <script>
-    fetch('http://10.0.1.41')
-      .then(res => res.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const images = doc.querySelectorAll('table#files img');
-        console.log('Found images:', images);
-        const container = document.getElementById('image-container');
-        container.innerHTML = ''; // Clear "Loading..."
 
-        images.forEach(img => {
-          const newImg = document.createElement('img');
-          newImg.src = img.src.startsWith('http') ? img.src : `http://10.0.1.41${img.getAttribute('src')}`;
-          newImg.style.maxWidth = '200px';
-          newImg.style.margin = '10px';
-          container.appendChild(newImg);
-        });
-      })
-      .catch(err => {
-        document.getElementById('image-container').innerText = 'Failed to load images.';
-        console.error('Fetch failed:', err);
+<script>
+  let index = 1;
+  const container = document.getElementById('image-container');
+  container.innerHTML = '';
+
+  function pad(num) {
+    return num.toString().padStart(2, '0');
+  }
+  function createImageCard(filename, url) {
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    /*card.style.border = '1px solid #ccc';
+    card.style.borderRadius = '8px';
+    card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+    card.style.padding = '12px';
+    card.style.marginBottom = '16px';
+    card.style.maxWidth = '840px';
+    card.style.background = '#fafbfc';*/
+
+    const title = document.createElement('div');
+    title.textContent = filename;
+    title.style.fontWeight = 'bold';
+    title.style.marginBottom = '8px';
+    title.style.fontSize = '1.4em';
+
+    const img = document.createElement('img');
+
+    img.src = url;
+    img.alt = filename;
+    img.style.display = 'block';
+    //img.style.maxWidth = '300px';
+    img.style.width = '100%';
+    img.style.borderRadius = '4px';
+
+    card.appendChild(title);
+    card.appendChild(img);
+
+    // Add click event to show original size image in a modal
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+      // Create modal elements
+      const modalBg = document.createElement('div');
+      modalBg.style.position = 'fixed';
+      modalBg.style.top = '0';
+      modalBg.style.left = '0';
+      modalBg.style.width = '100vw';
+      modalBg.style.height = '100vh';
+      modalBg.style.background = 'rgba(0,0,0,0.7)';
+      modalBg.style.display = 'flex';
+      modalBg.style.alignItems = 'center';
+      modalBg.style.justifyContent = 'center';
+      modalBg.style.zIndex = '9999';
+
+      const modalImg = document.createElement('img');
+      modalImg.src = url;
+      modalImg.alt = filename;
+      modalImg.style.maxWidth = '90vw';
+      modalImg.style.maxHeight = '90vh';
+      modalImg.style.boxShadow = '0 4px 32px rgba(0,0,0,0.5)';
+      modalImg.style.background = '#fff';
+      modalImg.style.borderRadius = '8px';
+
+      // Close modal on background click
+      modalBg.addEventListener('click', function(e) {
+      if (e.target === modalBg) {
+        document.body.removeChild(modalBg);
+      }
       });
-  </script>
+
+      modalBg.appendChild(modalImg);
+      document.body.appendChild(modalBg);
+    });    
+
+    return card;
+  }
+  function tryLoadNextImage() {
+    const url = `http://10.0.1.41/05-${pad(index)}.PNG`;
+    isImageUrlValid(url, function(isValid) {
+      if (isValid) {
+        const card = createImageCard(`05-${pad(index)}.PNG`, url);
+        container.appendChild(card);
+        index++;
+        tryLoadNextImage();
+      }
+    });
+  }
+
+  tryLoadNextImage();
+  function isImageUrlValid(url, callback) {
+    const img = new Image();
+    
+    img.onload = function() {
+      callback(true); // Image loaded successfully
+    };
+
+    img.onerror = function() {
+      callback(false); // Error loading image
+    };
+
+    img.src = url;
+  }
+
+  isImageUrlValid(imageUrl, function(isValid) {
+    if (isValid) {
+      console.log("✅ Valid image URL");
+    } else {
+      console.log("❌ Invalid image URL");
+    }
+  });
+</script>
+
 </body>
 </html>
