@@ -24,7 +24,7 @@
 </head>
 <body>
   <label for="start-index">Start Index:</label>
-  <input type="number" id="start-index" value="56" min="0" style="margin-right:8px;">
+  <input type="number" id="start-index" value="132" min="0" style="margin-right:8px;">
   <button id="load-images-btn">Load Images</button>
   <script>
 
@@ -100,11 +100,12 @@
 
     return card;
   }
-  function tryLoadNextImage(index) {
-    const url = `http://10.0.1.41/05-${pad(index)}.PNG`;
+  function tryLoadNextImage(index) {    
+    const padNum = pad(index, index > 100 ? 3 : 2);
+    const url = `http://10.0.1.41/05-${padNum}.PNG`;
     isImageUrlValid(url, function(isValid) {
       if (isValid) {
-        const card = createImageCard(`05-${pad(index)}.PNG`, url);
+        const card = createImageCard(`05-${padNum}.PNG`, url);
         container.appendChild(card);
         // Add a divider line after the card
         const divider = document.createElement('hr');
