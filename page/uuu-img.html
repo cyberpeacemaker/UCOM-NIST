@@ -7,7 +7,9 @@
     .img-card:hover {
       box-shadow: 0 4px 16px rgba(0,0,0,0.18);
       background: #2465c5;
-      transition: box-shadow 0.2s, background 0.2s;
+      transform: scale(1.02);
+      transform-origin: center;
+      transition: box-shadow 0.25s, background 0.2s, transform 0.2s;
     }
     .img-card {
       transition: box-shadow 0.2s, background 0.2s;
@@ -23,8 +25,10 @@
   </style>
 </head>
 <body>
+  <label for="chap-index">Chapter Index:</label>
+  <input type="text" id="chap-index" value="06" style="width:64px; margin-right:8px;">
   <label for="start-index">Start Index:</label>
-  <input type="number" id="start-index" value="132" min="0" style="margin-right:8px;">
+  <input type="number" id="start-index" value="0" min="0" style="margin-right:8px;">
   <button id="load-images-btn">Load Images</button>
   <script>
 
@@ -33,10 +37,11 @@
   <div id="image-container">Loading...</div>
 
 
-<script>
+<script>  
   const container = document.getElementById('image-container');
   container.innerHTML = '';
-  let startIndex = parseInt(document.getElementById('start-index').value, 10) || 0;
+  let chapIndex = document.getElementById('chap-index').value;
+  let startIndex = parseInt(document.getElementById('start-index').value, 10) || 0;  
   document.getElementById('load-images-btn').addEventListener('click', function() {
     container.innerHTML = '';
     startIndex = parseInt(document.getElementById('start-index').value, 10) || 0;
@@ -100,12 +105,13 @@
 
     return card;
   }
+  
   function tryLoadNextImage(index) {    
     const padNum = pad(index, index > 100 ? 3 : 2);
-    const url = `http://10.0.1.41/05-${padNum}.PNG`;
+    const url = `http://10.0.1.41/${chapIndex}-${padNum}.PNG`;
     isImageUrlValid(url, function(isValid) {
       if (isValid) {
-        const card = createImageCard(`05-${padNum}.PNG`, url);
+        const card = createImageCard(`${chapIndex}-${padNum}.PNG`, url);
         container.appendChild(card);
         // Add a divider line after the card
         const divider = document.createElement('hr');

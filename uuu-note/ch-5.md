@@ -219,3 +219,61 @@ sudo resolvectl flush-caches
 ---
 
 # Web Proxy Auto-Discovery Protocol
+
+---
+
+# DNS Server DB
+
+## Record
+## SOA
+## NS
+## A
+## CNAME
+## MX
+
+---
+
+## Canonical
+
+In the context of DNS (Domain Name System), **"canonical"** refers to the **true or official name** of a domain.
+
+### Canonical Name in DNS
+
+The term is most commonly seen in the context of **CNAME records**, where it stands for **Canonical Name**.
+
+### 🔹 CNAME (Canonical Name) Record
+
+A **CNAME record** is a type of DNS record ==that maps an alias name to the **canonical (true) domain name**.==
+
+#### Example:
+
+Let's say you have:
+
+```
+www.example.com   CNAME   example.com
+```
+
+This means:
+
+* `www.example.com` is an **alias**.
+==* The **canonical name** (true, primary domain) is `example.com`.==
+
+So when someone accesses `www.example.com`, DNS will resolve it to `example.com`, and then resolve `example.com` to its IP address using an A or AAAA record.
+
+### 🔍 Why Use CNAMEs?
+
+* To point multiple subdomains to a single domain.
+* To manage domains more easily (centralized configuration).
+* To alias services like `blog.example.com` → `sites.google.com/myblog`.
+
+### 🔒 Note:
+
+A **CNAME record** must always point to a **domain name**, not an IP address.
+
+### ✅ Summary
+
+* **Canonical** means the **real/original/true domain name**.
+* Used in **CNAME** records to define aliases.
+* Helps simplify and centralize DNS management.
+
+---
