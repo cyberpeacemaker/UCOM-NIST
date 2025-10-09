@@ -142,3 +142,90 @@ To **bind** means:
 ==> "Tell the server to listen on this IP address and port number for incoming client connections."==
 
 It’s a fundamental step in setting up a **web server** or **network service**.
+
+---
+
+# `whoami` command
+
+The `whoami` command is a simple and commonly used command in Unix-like operating systems (like Linux and macOS). It displays the **username of the current user** who is executing the command.
+
+### Example:
+
+```bash
+$ whoami
+john
+```
+
+---
+
+# What is DLL
+
+A **DLL** (Dynamic Link Library) is a file used in **Windows operating systems** that contains code and data that can be used by multiple programs at the same time.
+
+### Key Points:
+
+* **File extension**: `.dll`
+* **Purpose**: To share functions, classes, and resources (like icons) among programs.
+* **Benefits**:
+
+  * Saves memory by sharing code.
+  * Makes programs modular and easier to update.
+
+## Common DLL-based attack techniques (high level)
+
+I’ll describe the techniques conceptually (no exploit steps or code):
+
+* **DLL search-order hijacking (DLL preloading / side‑loading)**
+  Windows locates DLLs by searching a set of directories (application directory, system directories, PATH, etc.). If a vulnerable application loads a DLL by name without a full path, an attacker who can place a malicious DLL in an earlier-searched location can get it loaded. This is commonly abused when apps load third-party DLLs from their working directory.
+
+* **Proxying / DLL replacement**
+  An attacker drops a malicious DLL that implements the same exported names as an expected DLL. The app loads the attacker’s DLL (either due to search order or because the original was replaced), and the malicious code runs — often calling through to the original implementation to avoid breaking functionality.
+
+* **DLL sideloading using signed binaries**
+  Some signed executables will load DLLs from their directory. Attackers drop a malicious DLL next to a signed executable and run it — the signed exe launches and loads the malicious DLL. This leverages a trusted signed binary to get code executed.
+
+* **DLL injection**
+  **Forcing a process to load a DLL (or map code into its address space) so code runs in the context of that process.** Techniques vary (APIs exist that facilitate remote-thread creation or hooking) — attackers use injection for stealth, credential theft, or to manipulate process behavior.
+
+* **Reflective/loading-from-memory**
+  Rather than touching disk, **malware may map a DLL image into memory and run it directly to avoid file-based detection.** This reduces forensic artifacts on disk.
+
+* **Abuse of legitimate DLLs (living-off-the-land)**
+  Attackers may use legitimate DLLs (or legitimate signed software that can load plugins) as a vector by abusing their features to execute malicious payloads.
+
+  # Typical targets
+
+* Applications with writeable install directories or working directories that are user-writable.
+* Signed utilities that load local DLLs.
+* Services and scheduled tasks that run with elevated privileges.
+* Browsers, Office apps, and other high-privilege processes where in-process code is especially valuable.
+
+---
+
+# 🌱 **Environment Variables – A Short Intro**
+
+**Environment variables** are key-value pairs used by the operating system to **configure and control the behavior of processes and applications**. They provide information like system paths, user settings, or runtime configurations.
+
+## 🔧 **Default/System Environment Variables**
+
+These are **predefined variables** set by the operating system. They are available to all users and processes. Examples include:
+
+* `PATH` – Directories to search for executable files.
+* `HOME` (Linux/macOS) / `USERPROFILE` (Windows) – The user's home directory.
+* `OS` – The operating system name.
+* `TEMP` or `TMP` – Directory for temporary files.
+* `USERNAME` – The current logged-in user.
+
+## 📍Example (Windows):
+
+```cmd
+echo %USERNAME%
+```
+
+To **show all system default environment variables**, it depends on your operating system:
+
+### On **Windows** (Command Prompt):
+
+```cmd
+set
+```
